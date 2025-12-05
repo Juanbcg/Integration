@@ -1,0 +1,19 @@
+services:
+  frontend:
+    build: .
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    container_name: frontend
+    networks:
+      - appnet
+
+  backend:
+    image: nginx:alpine
+    container_name: backend
+    networks:
+      - appnet
+
+networks:
+  appnet:
