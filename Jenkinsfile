@@ -4,14 +4,27 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/tu_usuario/Integracion-C.git'
+                // Clonar el repo
+                git 'https://github.com/Juanbcg/Integration'
             }
         }
 
-        stage('Install') {
+        stage('Fix folder name (Windows capitalization)') {
             steps {
+                // Renombrar App a app si es necesario
+                bat '''
+                if exist App (
+                    rename App app
+                )
+                '''
+            }
+        }
+
+        stage('Install dependencies') {
+            steps {
+                // Entrar a la carpeta app
                 dir('app') {
-                    sh 'npm install'
+                    bat 'npm install'
                 }
             }
         }
@@ -19,32 +32,23 @@ pipeline {
         stage('Run Tests') {
             steps {
                 dir('app') {
-                    sh 'npm run test'
+                    bat 'npm test'
                 }
             }
         }
 
-        stage('Coverage') {
+        stage('Build Frontend') {
             steps {
                 dir('app') {
-                    sh 'npm run coverage'
+                    bat 'npm run build'
                 }
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Archive Results') {
             steps {
-                sh 'docker build -t mi-app .'
+                archiveArtifacts artifacts: 'app/build/**', fingerprint: true
             }
-        }
-    }
-
-    post {
-        success {
-            echo 'Pipeline completado con éxito!'
-        }
-        failure {
-            echo 'El pipeline falló.'
         }
     }
 }
